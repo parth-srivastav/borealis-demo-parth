@@ -1,0 +1,17 @@
+name: Deploy use deployment output
+
+on:
+  push: # What triggers a deployment. For example, `push`.
+    branches:
+      - main # What branch triggers a deployment. For example, `main`.
+jobs:
+  build:
+    name: deploy from experiment
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploying
+        id: deployment
+        uses: ./.github/workflows/borealis-demo.yml
+      - name: script
+        run: echo "${{ steps.deployment.outputs.deployment-text }}"
+        shell: bash

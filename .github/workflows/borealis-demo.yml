@@ -1,15 +1,18 @@
 name: Deploy my latest version
 
-on: 
-  push: # What triggers a deployment. For example, `push`.
-    branches:
-      - main # What branch triggers a deployment. For example, `main`.   
+#on:
+#  push: # What triggers a deployment. For example, `push`.
+#    branches:
+#      - main # What branch triggers a deployment. For example, `main`.
 
 jobs:
   build:
     name: deploy from main
     runs-on: ubuntu-latest
-
+    outputs:
+      deployment-text:
+        description: wow
+        value: ${{steps.deployment}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -22,9 +25,9 @@ jobs:
           clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
           clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
           path-to-file: "/deploy-automated-2-env.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
-      - name: script test
-        run: echo "testing echo"
-        shell: bash
-      - name: script
-        run: ${{ steps.deployment.outputs.deployment-link }} | grep ID
-        shell: bash
+#      - name: script test
+#        run: echo "testing echo"
+#        shell: bash
+#      - name: script
+#        run: echo "${{ steps.deployment.outputs.deployment-link }} | grep ID"
+#        shell: bash
