@@ -109,7 +109,7 @@ webhooks:
         "event_type": "checkLogs",
         "client_payload": {
             "callbackUri": "{{armory.callbackUri}}/callback",
-            "deployment_id": "{{armory.deploymentId}}"
+            "deployment_id": "{{armory.pipelineId}}"
             }
         }
     retryCount: 3
