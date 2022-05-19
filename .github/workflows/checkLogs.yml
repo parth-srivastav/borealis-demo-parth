@@ -34,7 +34,7 @@ jobs:
           method: "GET"
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
       - name: show pipelineID
-        run: echo "${{ fromJSON(steps.getpipeline.outputs.response).parentPipelineId }}
+        run: echo "${{ fromJSON(steps.getpipeline.outputs.response).parentPipelineId }}"
       - name: show deploymen_id
         run: echo "${{ github.event.client_payload.callbackUri }}"
         env:
