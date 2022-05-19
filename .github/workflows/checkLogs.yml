@@ -28,6 +28,13 @@ jobs:
           data: '{ "success": true, "mdMessage": "Webhook successful: no errors found in logs" }'
       - name: show deploymen_id
         run: echo "${{ github.event.client_payload.deployment_id }}"
-#        env:
-#          json_var: ${{ github.event.client_payload }}
+        env:
+          json_var: ${{ github.event.client_payload.deployment_id }}
+  monitor:
+    container:
+      image: armory/armory-cli:latest
+      env:
+        deploymentID: ${{ github.event.client_payload.deployment_id }}
+    steps:
+      - run: armory deploy status ${{ github.event.client_payload.deployment_id }} -o yaml
 
