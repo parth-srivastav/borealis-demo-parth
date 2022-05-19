@@ -31,6 +31,7 @@ jobs:
         env:
           json_var: ${{ github.event.client_payload.deployment_id }}
   monitor:
+    runs-on: ubuntu-18.04
     container:
       image: armory/armory-cli:latest
       env:
