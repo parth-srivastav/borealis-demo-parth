@@ -26,5 +26,5 @@ jobs:
         run: echo "testing echo"
         shell: bash
       - name: script
-        run: echo "${{ steps.Deployment.deployment-link }}"
+        run: echo "${{ steps.deployment.outputs.deployment-link }}"
         shell: bash
