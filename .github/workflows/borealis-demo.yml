@@ -18,8 +18,6 @@ jobs:
         description: wow
         value: ${{steps.deployment}}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
       - name: Deployment
         id: deployment
