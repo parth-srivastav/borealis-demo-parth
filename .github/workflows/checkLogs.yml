@@ -26,5 +26,5 @@ jobs:
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
           data: '{ "success": true, "mdMessage": "Webhook successful: no errors found in logs" }'
-      - name: show http response
-        run: echo ${{ steps.callCallback.outputs.response }}
+      - name: show deployment id
+        run: echo "${{ github.event.client_payload.deploymentId }}"
