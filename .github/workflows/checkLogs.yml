@@ -29,5 +29,7 @@ jobs:
       - name: show deploymen_id
         run: echo "${{ github.event.client_payload.deployment_id }}"
       - name: show run id
-        run: echo "${{ github.event.client_payload }}"
+        run: echo $json_var | jq '.'
+        env:
+          json_var: ${{ github.event.client_payload }}
 
