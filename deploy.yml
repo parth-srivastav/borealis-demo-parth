@@ -218,7 +218,7 @@ webhooks: #Note: All webhooks in this demo simply cann the github action workflo
             "callbackUri": "{{armory.callbackUri}}/callback"
             }
         }
-    retryCount: 3
+    retryCount: 2
   - name: Integration_Tests
     method: POST
     uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
