@@ -13,6 +13,6 @@ jobs:
       - name: deploying
         id: deployment
         uses: test-gh-cli-fork-1/borealis-demo@main
-- name: script
+      - name: script
         run: echo "${{ steps.deployment.outputs.deployment-text }}"
         shell: bash
