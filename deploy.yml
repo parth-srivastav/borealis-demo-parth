@@ -221,7 +221,7 @@ webhooks: #Note: All webhooks in this demo simply cann the github action workflo
     retryCount: 2
   - name: Integration_Tests
     method: POST
-    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    uriTemplate: https://api.github.com/repos/parth-srivastav/test-gh-cli-fork/dispatches
     headers:
       - key: Authorization
         value: token {{secrets.github_token}}
