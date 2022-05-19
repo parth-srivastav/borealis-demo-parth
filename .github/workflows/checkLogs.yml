@@ -27,4 +27,4 @@ jobs:
           customHeaders: '{ "Content-Type": "application/json" }'
           data: '{ "success": true, "mdMessage": "Webhook successful: no errors found in logs" }'
       - name: show deployment id
-        run: echo "${{ github.event.client_payload.deploymentId }}"
+        run: echo "${{ github.event.client_payload.deployment_id }}"
