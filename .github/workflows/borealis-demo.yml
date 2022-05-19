@@ -9,11 +9,14 @@ jobs:
   build:
     name: deploy from main
     runs-on: ubuntu-latest
+    outputs:
+      deploymentID: ${{ steps.deployment }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Deployment
+        id: deployment
         uses: armory/cli-deploy-action@main
         with:
           clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
