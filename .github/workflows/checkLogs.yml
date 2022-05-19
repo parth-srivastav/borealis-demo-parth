@@ -37,5 +37,5 @@ jobs:
       env:
         deploymentID: ${{ github.event.client_payload.deployment_id }}
     steps:
-      - run: armory deploy status ${{ github.event.client_payload.deployment_id }} -o yaml
+      - run: armory deploy status -i ${{ github.event.client_payload.deployment_id }} -o yaml -c "${{ secrets.CDAAS_CLIENT_ID }}" -s "${{ secrets.CDAAS_CLIENT_SECRET }}"
 
