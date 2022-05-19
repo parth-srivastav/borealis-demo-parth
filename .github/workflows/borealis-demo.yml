@@ -4,7 +4,11 @@ name: Deploy my latest version
 #  push: # What triggers a deployment. For example, `push`.
 #    branches:
 #      - main # What branch triggers a deployment. For example, `main`.
-
+on:
+  workflow_call:
+    inputs:
+      client-id:
+        required: false
 jobs:
   build:
     name: deploy from main
