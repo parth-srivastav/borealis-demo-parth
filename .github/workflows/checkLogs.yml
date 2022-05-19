@@ -26,6 +26,15 @@ jobs:
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
           data: '{ "success": true, "mdMessage": "Webhook successful: no errors found in logs" }'
+      - name: getPipelineID
+        id: getpipeline
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: "https://api.cloud.armory.io/deployments/${{ github.event.client_payload.deployment_id }}"
+          method: "GET"
+          bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
+      - name: show pipelineID
+        run: echo "${{ fromJSON(steps.getpipeline.outputs.response).parentPipelineId }}
       - name: show deploymen_id
         run: echo "${{ github.event.client_payload.callbackUri }}"
         env:
