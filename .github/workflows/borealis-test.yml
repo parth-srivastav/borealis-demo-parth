@@ -1,5 +1,4 @@
 name: Deploy use deployment output
-
 on:
   push: # What triggers a deployment. For example, `push`.
     branches:
@@ -13,7 +12,7 @@ jobs:
         uses: actions/checkout@v2
       - name: deploying
         id: deployment
-        uses: ./.github/workflows/borealis-demo.yml
-      - name: script
+        uses: test-gh-cli-fork-1/borealis-demo@main
+- name: script
         run: echo "${{ steps.deployment.outputs.deployment-text }}"
         shell: bash
