@@ -16,7 +16,6 @@ jobs:
 
       - name: Deployment
         id: deployment
-
         uses: armory/cli-deploy-action@main
         with:
           clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
