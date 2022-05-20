@@ -22,6 +22,8 @@ jobs:
           clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
           clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
           path-to-file: "/deploy-automated-2-env.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+      - name: readApplicationName
+        run: grep application -f /deploy-automated-2-env.yml
 
       - name: script
         run: echo "${{ steps.deployment.deployment-link }}"
