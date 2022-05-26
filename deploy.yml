@@ -135,8 +135,8 @@ strategies:
             queries:
               - avgCPUUsage-pass
       shutDownOldVersionAfter:
-        - pause:
-            untilApproved: true
+#        - pause:
+#            untilApproved: true
         - runWebhook:
             name: Check_Logs
         - analysis:
