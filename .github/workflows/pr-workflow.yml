@@ -22,12 +22,12 @@ jobs:
           path-to-file: "/deploy-automated-2-env.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
 
       - name: Wait for tests to succeed
-          uses: lewagon/wait-on-check-action@v1.0.0
-          with:
-            ref: ${{ github.ref }}
-            check-name: checkLogs
-            repo-token: ${{ secrets.GITHUB_TOKEN }}
-            wait-interval: 20
+        uses: lewagon/wait-on-check-action@v1.0.0
+        with:
+          ref: {{ github.ref }}
+          check-name: checkLogs
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 20
 
       - name: readApplicationName
         run: grep application -f "deploy-automated-2-env.yml"
