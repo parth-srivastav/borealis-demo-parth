@@ -10,15 +10,15 @@ jobs:
     name: deploy from main
     runs-on: self-hosted
     steps:
-      - name: installHelm
-        uses: yokawasa/action-setup-kube-tools@v0.7.1
-        with:
-          helm: '3.9.2'
-          kustomize: '4.5.7'  
-      - name: Checkout code
-        uses: actions/checkout@v2 
-      - name: buildLocust
-        run: kustomize build --enable-helm thirdParty/locust > thirdParty/locust/generatedManifest.yml
+#       - name: installHelm
+#         uses: yokawasa/action-setup-kube-tools@v0.7.1
+#         with:
+#           helm: '3.9.2'
+#           kustomize: '4.5.7'  
+#       - name: Checkout code
+#         uses: actions/checkout@v2 
+#       - name: buildLocust
+#         run: kustomize build --enable-helm thirdParty/locust > thirdParty/locust/generatedManifest.yml
       - name: Deployment
         uses: armory/cli-deploy-action@main
         with:
