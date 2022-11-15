@@ -19,6 +19,8 @@ jobs:
 #         uses: actions/checkout@v2 
 #       - name: buildLocust
 #         run: kustomize build --enable-helm thirdParty/locust > thirdParty/locust/generatedManifest.yml
+      - name: directory
+        run: ls -l
       - name: Deployment
         uses: armory/cli-deploy-action@dev
         with:
