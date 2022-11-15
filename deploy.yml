@@ -14,14 +14,14 @@ targets:  # The list of manifests sources
   # This in the name of a deployment, underneath it are its configuration
   dev:
     # the name of an agent configured account
-    account: demo-dev-cluster #sa-eks-direct #saClusterViaHelm
+    account: demo-prod-west-cluster #sa-eks-direct #saClusterViaHelm
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-dev
     # This is the key to a strategy under the strategies map
     strategy: rolling
   staging:
     # the name of an agent configured account
-    account: demo-staging-cluster
+    account: 11-14-1
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-staging
     # This is the key to a strategy under the strategies map
@@ -34,7 +34,7 @@ targets:  # The list of manifests sources
           name: Integration_Tests
   infosec:
     # the name of an agent configured account
-    account: demo-staging-cluster
+    account: 11-14-1
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-infosec
     # This is the key to a strategy under the strategies map
@@ -46,7 +46,7 @@ targets:  # The list of manifests sources
           name: Security_Scanners
   prod-eu:
     # the name of an agent configured account
-    account: demo-prod-eu-cluster
+    account: 11-14-1
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-prod-eu
     # This is the key to a strategy under the strategies map
@@ -58,7 +58,7 @@ targets:  # The list of manifests sources
             untilApproved: true
   prod-west:
     # the name of an agent configured account
-    account: demo-prod-west-cluster
+    account: 11-14-1
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-prod
     # This is the key to a strategy under the strategies map
@@ -68,18 +68,18 @@ targets:  # The list of manifests sources
       beforeDeployment:
       - pause:
           untilApproved: true
-  prod-east:
-    # the name of an agent configured account
-    account: demo-prod-west-cluster
-    # Optionally override the namespaces that are in the manifests
-    namespace: borealis-prod-east
-    # This is the key to a strategy under the strategies map
-    strategy: mycanary
-    constraints:
-      dependsOn: [ "infosec","staging" ]
-      beforeDeployment:
-        - pause:
-            untilApproved: true
+#  prod-east:
+#    # the name of an agent configured account
+#    account: 11-14-1
+#    # Optionally override the namespaces that are in the manifests
+#    namespace: borealis-prod-east
+#    # This is the key to a strategy under the strategies map
+#    strategy: mycanary
+#    constraints:
+#      dependsOn: [ "infosec","staging" ]
+#      beforeDeployment:
+#        - pause:
+#            untilApproved: true
 
 manifests:  # The map of strategies, a deployment target will reference one of these
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
@@ -104,6 +104,7 @@ strategies:  # Stragies names and definition
               numberOfJudgmentRuns: 1
               rollBackMode: manual
               rollForwardMode: automatic
+              lookbackMethod: GROWING
               queries:
               - avgCPUUsage-pass
           - runWebhook:
@@ -118,6 +119,7 @@ strategies:  # Stragies names and definition
               numberOfJudgmentRuns: 3
               rollBackMode: manual
               rollForwardMode: manual
+              lookbackMethod: GROWING
               queries: 
               - avgCPUUsage-fail
               - avgCPUUsage-pass
@@ -141,6 +143,7 @@ strategies:  # Stragies names and definition
             numberOfJudgmentRuns: 1
             rollBackMode: manual
             rollForwardMode: automatic
+            lookbackMethod: GROWING
             queries:
               - avgCPUUsage-pass
       shutDownOldVersionAfter:
@@ -152,6 +155,7 @@ strategies:  # Stragies names and definition
             interval: 7
             units: seconds
             numberOfJudgmentRuns: 1
+            lookbackMethod: GROWING
             rollBackMode: manual
             queries:
               - avgCPUUsage-pass
