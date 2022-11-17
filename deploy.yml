@@ -14,7 +14,7 @@ targets:  # The list of manifests sources
   # This in the name of a deployment, underneath it are its configuration
   dev:
     # the name of an agent configured account
-    account: demo-prod-west-cluster #sa-eks-direct #saClusterViaHelm
+    account: 11-14-1 #sa-eks-direct #saClusterViaHelm
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-dev
     # This is the key to a strategy under the strategies map
@@ -169,7 +169,7 @@ analysis:  # Canary analysis queries and thresholds
       queryTemplate: >-
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
     - name: avgCPUUsage-fail
-      upperLimit: 0.001
+      upperLimit: 1
       lowerLimit: 0
       queryTemplate: >-
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
