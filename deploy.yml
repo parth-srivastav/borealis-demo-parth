@@ -3,17 +3,27 @@ kind: kubernetes
 application: potato-facts
 targets: #This section defines the targets to which you are deploying, and their constraints.
   dev:
-    account: demo-dev-cluster
+    # the name of an agent configured account
+    account: 11-17-1 #sa-eks-direct #saClusterViaHelm
+    # Optionally override the namespaces that are in the manifests
     namespace: borealis-dev
     strategy: rolling
-  infosec:
-    account: demo-staging-cluster
+  staging:
+    # the name of an agent configured account
+    account: 11-17-1
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-staging
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    # This is a list of manifest names that should be included in this deployment
     constraints:
       afterDeployment:
-        - runWebhook:
-            name: Security_Scanners
-      dependsOn:
-        - dev
+      - runWebhook:
+          name: Integration_Tests
+  infosec:
+    # the name of an agent configured account
+    account: 11-17-1
+    # Optionally override the namespaces that are in the manifests
     namespace: borealis-infosec
     strategy: rolling
   prod-east:
@@ -35,21 +45,9 @@ targets: #This section defines the targets to which you are deploying, and their
     namespace: borealis-prod-east
     strategy: mycanary
   prod-eu:
-    account: demo-prod-eu-cluster
-    constraints:
-      afterDeployment:
-        - runWebhook:
-            name: Send_Slack_Deployment_Complete
-      beforeDeployment:
-        - pause:
-            requiresRoles:
-              - Organization Admin
-            untilApproved: true
-        - runWebhook:
-            name: Send_Slack_Deployment_Approval_Required
-      dependsOn:
-        - infosec
-        - staging
+    # the name of an agent configured account
+    account: 11-17-1
+    # Optionally override the namespaces that are in the manifests
     namespace: borealis-prod-eu
     strategy: myBlueGreen
   prod-west:
@@ -63,11 +61,10 @@ targets: #This section defines the targets to which you are deploying, and their
             requiresRoles:
               - Organization Admin
             untilApproved: true
-        - runWebhook:
-            name: Send_Slack_Deployment_Approval_Required
-      dependsOn:
-        - infosec
-        - staging
+  prod-west:
+    # the name of an agent configured account
+    account: 11-17-1
+    # Optionally override the namespaces that are in the manifests
     namespace: borealis-prod
     strategy: mycanary
   prod-apac:
