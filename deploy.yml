@@ -175,10 +175,10 @@ analysis:  # Canary analysis queries and thresholds
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
 
 trafficManagement:
-  - targets: [prod-east]
-    smi:
-      - rootServiceName: potato-facts-cluster-svc
-      - rootServiceName: potato-lies-cluster-svc
+#  - targets: [prod-east]
+#    smi:
+#      - rootServiceName: potato-facts-cluster-svc
+#      - rootServiceName: potato-lies-cluster-svc
   - targets: [prod-eu]
     kubernetes:
       - activeService: potato-facts-external
