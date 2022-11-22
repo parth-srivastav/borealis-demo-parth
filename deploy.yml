@@ -198,7 +198,8 @@ webhooks: #Note: All webhooks in this demo simply cann the github action workflo
         {
         "event_type": "webhookCallback",
         "client_payload": {
-            "callbackUri": "{{armory.callbackUri}}/callback"
+            "callbackUri": "{{armory.callbackUri}}/callback",
+            "environment": "{{context.environment}}"
             }
         }
     retryCount: 3
