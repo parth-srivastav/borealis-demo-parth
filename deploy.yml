@@ -4,13 +4,13 @@ application: potato-facts
 targets: #This section defines the targets to which you are deploying, and their constraints.
   dev:
     # the name of an agent configured account
-    account: 11-17-1 #sa-eks-direct #saClusterViaHelm
+    account: demo-staging-cluster #sa-eks-direct #saClusterViaHelm
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-dev
     strategy: rolling
   staging:
     # the name of an agent configured account
-    account: 11-17-1
+    account: demo-staging-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-staging
     # This is the key to a strategy under the strategies map
@@ -18,11 +18,11 @@ targets: #This section defines the targets to which you are deploying, and their
     # This is a list of manifest names that should be included in this deployment
     constraints:
       afterDeployment:
-      - runWebhook:
-          name: Integration_Tests
+        - runWebhook:
+            name: Integration_Tests
   infosec:
     # the name of an agent configured account
-    account: 11-17-1
+    account: demo-staging-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-infosec
     strategy: rolling
@@ -31,22 +31,10 @@ targets: #This section defines the targets to which you are deploying, and their
     constraints:
       afterDeployment:
         - runWebhook:
-            name: Send_Slack_Deployment_Complete
-      beforeDeployment:
-        - pause:
-            requiresRoles:
-              - Organization Admin
-            untilApproved: true
-        - runWebhook:
-            name: Send_Slack_Deployment_Approval_Required
-      dependsOn:
-        - infosec
-        - staging
-    namespace: borealis-prod-east
-    strategy: mycanary
+            name: Security_Scanners
   prod-eu:
     # the name of an agent configured account
-    account: 11-17-1
+    account: demo-staging-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-prod-eu
     strategy: myBlueGreen
@@ -63,7 +51,7 @@ targets: #This section defines the targets to which you are deploying, and their
             untilApproved: true
   prod-west:
     # the name of an agent configured account
-    account: 11-17-1
+    account: demo-staging-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-prod
     strategy: mycanary
@@ -75,40 +63,25 @@ targets: #This section defines the targets to which you are deploying, and their
             name: Send_Slack_Deployment_Complete
       beforeDeployment:
         - pause:
-            requiresRoles:
-              - Organization Admin
             untilApproved: true
-        - runWebhook:
-            name: Send_Slack_Deployment_Approval_Required
-      dependsOn:
-        - infosec
-        - staging
-    namespace: borealis-prod-apac
-    strategy: mycanary
-  staging:
-    account: demo-staging-cluster
-    constraints:
-      afterDeployment:
-        - runWebhook:
-            name: Integration_Tests
-      dependsOn:
-        - dev
-    namespace: borealis-staging
-    strategy: rolling
-manifests: #This section defines the Manifests you are deploying, by default they reach all targets, but you can specify certain targets if needed.
+#  prod-east:
+#    # the name of an agent configured account
+#    account: 11-14-1
+#    # Optionally override the namespaces that are in the manifests
+#    namespace: borealis-prod-east
+#    # This is the key to a strategy under the strategies map
+#    strategy: mycanary
+#    constraints:
+#      dependsOn: [ "infosec","staging" ]
+#      beforeDeployment:
+#        - pause:
+#            untilApproved: true
+
+manifests:  # The map of strategies, a deployment target will reference one of these
+  # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
   - path: manifests/potato-facts.yml
   - path: manifests/potato-facts-external-service.yml
-    targets:
-      - prod-west
-      - prod-eu
-      - prod-east
-      - prod-apac
-  - path: manifests/potato-facts-internal-service.yml
-    targets:
-      - dev
-      - staging
-      - infosec
-      - prod-eu
+    targets: [prod-west, prod-eu]
   - path: manifests/potato-lies.yml
   - path: manifests/istio-files/
     targets:
@@ -210,7 +183,7 @@ analysis: #This section defines queries against your monitoring system that can 
       queryTemplate: >-
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
     - name: avgCPUUsage-fail
-      upperLimit: 1
+      upperLimit: 0.001
       lowerLimit: 0
       queryTemplate: >-
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
