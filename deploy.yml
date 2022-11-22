@@ -14,14 +14,14 @@ targets:  # The list of manifests sources
   # This in the name of a deployment, underneath it are its configuration
   dev:
     # the name of an agent configured account
-    account: 11-17-1 #sa-eks-direct #saClusterViaHelm
+    account: demo-staging-cluster #sa-eks-direct #saClusterViaHelm
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-dev
     # This is the key to a strategy under the strategies map
     strategy: rolling
   staging:
     # the name of an agent configured account
-    account: 11-17-1
+    account: demo-staging-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-staging
     # This is the key to a strategy under the strategies map
@@ -30,11 +30,11 @@ targets:  # The list of manifests sources
     constraints:
       dependsOn: ["dev"]
       afterDeployment:
-      - runWebhook:
-          name: Integration_Tests
+        - runWebhook:
+            name: Integration_Tests
   infosec:
     # the name of an agent configured account
-    account: 11-17-1
+    account: demo-staging-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-infosec
     # This is the key to a strategy under the strategies map
@@ -42,11 +42,11 @@ targets:  # The list of manifests sources
     constraints:
       dependsOn: ["dev"]
       afterDeployment:
-      - runWebhook:
-          name: Security_Scanners
+        - runWebhook:
+            name: Security_Scanners
   prod-eu:
     # the name of an agent configured account
-    account: 11-17-1
+    account: demo-staging-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-prod-eu
     # This is the key to a strategy under the strategies map
@@ -58,7 +58,7 @@ targets:  # The list of manifests sources
             untilApproved: true
   prod-west:
     # the name of an agent configured account
-    account: 11-17-1
+    account: demo-staging-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-prod
     # This is the key to a strategy under the strategies map
@@ -66,8 +66,8 @@ targets:  # The list of manifests sources
     constraints:
       dependsOn: ["infosec","staging"]
       beforeDeployment:
-      - pause:
-          untilApproved: true
+        - pause:
+            untilApproved: true
 #  prod-east:
 #    # the name of an agent configured account
 #    account: 11-14-1
@@ -85,7 +85,7 @@ manifests:  # The map of strategies, a deployment target will reference one of t
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
   - path: manifests/potato-facts.yml
   - path: manifests/potato-facts-external-service.yml
-    targets: [prod-west, prod-eu, prod-east]
+    targets: [prod-west, prod-eu]
   - path: manifests/potato-lies.yml
 
 strategies:  # Stragies names and definition
@@ -169,7 +169,7 @@ analysis:  # Canary analysis queries and thresholds
       queryTemplate: >-
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
     - name: avgCPUUsage-fail
-      upperLimit: 1
+      upperLimit: 0.001
       lowerLimit: 0
       queryTemplate: >-
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
