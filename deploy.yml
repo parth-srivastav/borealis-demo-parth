@@ -178,7 +178,7 @@ analysis: #This section defines queries against your monitoring system that can 
   defaultMetricProviderName: Stephen-Prometheus
   queries:
     - name: avgCPUUsage-pass
-      upperLimit: string #3
+      upperLimit: 1000 #3
       lowerLimit: -5
       queryTemplate: >-
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
