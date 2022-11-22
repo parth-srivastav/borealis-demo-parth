@@ -208,14 +208,13 @@ webhooks: #Note: All webhooks in this demo simply cann the github action workflo
         value: token {{secrets.github_token}}
       - key: Content-Type
         value: application/json
-    method: POST
-    name: Check_Logs
-    retryCount: 3
-    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
-  - bodyTemplate:
-      inline: |-
-        { "event_type": "checkLogs", "client_payload": {
-            "callbackUri": "{{armory.callbackUri}}/callback"
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "webhookCallback",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback",
+            "environment": "{{context.environment}}"
             }
         }
     headers:
