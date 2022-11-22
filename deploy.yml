@@ -198,29 +198,11 @@ trafficManagement:
       - activeService: potato-facts-external
         previewService: potato-facts-internal
       - activeService: potato-lies-external
-        previewService: potato-lies-internal
-    targets:
-      - prod-eu
-  - istio:
-      - virtualService:
-          name: potato-facts
-        destinationRule:
-          name: potato-facts
-          activeSubsetName: v1
-      - virtualService:
-          name: potato-lies-external
-        destinationRule:
-          name: potato-lies-external
-          activeSubsetName: v1
-    targets:
-      - prod-apac
-webhooks: #Webhooks can be used to run external automation.
-  - bodyTemplate:
-      inline: |-
-        { "event_type": "webhookCallback", "client_payload": {
-            "callbackUri": "{{armory.callbackUri}}/callback"
-            }
-        }
+
+webhooks: #Note: All webhooks in this demo simply cann the github action workflow for the 'webhookCallback' event on a github repo. They have different names for demo purposes.
+  - name: Check_Log
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
     headers:
       - key: Authorization
         value: token {{secrets.github_token}}
