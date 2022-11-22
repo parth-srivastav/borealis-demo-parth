@@ -185,7 +185,7 @@ trafficManagement:
       - activeService: potato-lies-external
 
 webhooks: #Note: All webhooks in this demo simply cann the github action workflow for the 'webhookCallback' event on a github repo. They have different names for demo purposes.
-  - name: Check_Logs
+  - name: Check_Log
     method: POST
     uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
     headers:
