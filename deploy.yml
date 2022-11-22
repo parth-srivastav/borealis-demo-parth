@@ -178,8 +178,8 @@ analysis: #This section defines queries against your monitoring system that can 
   defaultMetricProviderName: Stephen-Prometheus
   queries:
     - name: avgCPUUsage-pass
-      upperLimit: 10000 #3
-      lowerLimit: 0
+      upperLimit: string #3
+      lowerLimit: -5
       queryTemplate: >-
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
     - name: avgCPUUsage-fail
@@ -200,7 +200,7 @@ trafficManagement:
       - activeService: potato-lies-external
 
 webhooks: #Note: All webhooks in this demo simply cann the github action workflow for the 'webhookCallback' event on a github repo. They have different names for demo purposes.
-  - name: Check_Log
+  - name: Check_Logs
     method: POST
     uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
     headers:
