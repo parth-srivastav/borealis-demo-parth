@@ -27,7 +27,8 @@ jobs:
         with:
           sha: ${{github.sha}}
           body: |
-            Deployment URL - ${{steps.armory.outputs.DEPLOYMENT_ID}}
+            Deployment URL - ${{steps.armory.outputs.LINK}}
+            Deployment ID - ${{steps.armory.outputs.DEPLOYMENT_ID}}
 
 #        run: |
 #          echo ${{join(steps.armory.outputs.*, '\n')}}
