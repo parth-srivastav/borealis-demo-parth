@@ -9,8 +9,7 @@ jobs:
   build:
     name: deploy from main CLI
     runs-on: ubuntu-20.04
-    permissions:
-      pull-requests: write
+    permissions: write-all
     steps:
 
       - name: Checkout code
