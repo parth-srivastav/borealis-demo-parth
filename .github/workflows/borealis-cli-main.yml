@@ -27,7 +27,7 @@ jobs:
         uses: peter-evans/commit-comment@v2
         with:
           sha: ${{github.sha}}
-          message: |
+          body: |
             Deployment URL - ${{steps.armory.outputs.DEPLOYMENT_ID}}
 
 #        run: |
