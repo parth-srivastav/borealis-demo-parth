@@ -25,9 +25,9 @@ jobs:
           applicationName: "potato-facts-main4ps"
       - name: echo-ID
         uses: mshick/add-pr-comment@v2
-          with:
-            message: |
-              Deployment URL - ${{steps.armory.outputs.DEPLOYMENT_ID}}
+        with:
+          message: |
+            Deployment URL - ${{steps.armory.outputs.DEPLOYMENT_ID}}
 
 #        run: |
 #          echo ${{join(steps.armory.outputs.*, '\n')}}
