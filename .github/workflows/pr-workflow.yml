@@ -1,0 +1,38 @@
+name: Deploy my latest branch
+
+on:
+  pull_request
+
+
+jobs:
+  build:
+    name: deploy from main
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deployment
+        id: deployment
+        uses: armory/cli-deploy-action@main
+        with:
+          clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
+          clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
+          path-to-file: "/deploy-automated-2-env.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+
+      - name: Wait for tests to succeed
+        uses: lewagon/wait-on-check-action@v1.0.0
+        with:
+          ref: {{ github.ref }}
+          check-name: checkLogs
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 20
+
+      - name: readApplicationName
+        run: grep application -f "deploy-automated-2-env.yml"
+        shell: bash
+
+      - name: script
+        run: echo "${{ steps.deployment.deployment-link }}"
+        shell: bash
