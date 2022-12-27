@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: deploy from main
+    name: deploy from main CLI
     runs-on: ubuntu-20.04
     permissions:
       pull-requests: write
@@ -24,8 +24,9 @@ jobs:
           path-to-file: "/deploy.yml"
           applicationName: "potato-facts-main4ps"
       - name: echo-ID
-        uses: mshick/add-pr-comment@v2
+        uses: peter-evans/commit-comment@v2
         with:
+          sha: ${{github.sha}}
           message: |
             Deployment URL - ${{steps.armory.outputs.DEPLOYMENT_ID}}
 
