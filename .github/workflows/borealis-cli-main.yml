@@ -14,9 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Deployment
+        id: armory
         uses: armory/cli-deploy-action@main
         with:
           clientId: ${{ secrets.CDAAS_CLIENT_ID }}  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
           clientSecret:  ${{ secrets.CDAAS_CLIENT_SECRET }} #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
           path-to-file: "/deploy.yml"
           applicationName: "potato-facts-main4ps"
+      - name: echo-ID
+        run: |
+          echo ${{join(steps.armory.outputs.*, '\n')}}
