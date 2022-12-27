@@ -9,6 +9,8 @@ jobs:
   build:
     name: deploy from main
     runs-on: ubuntu-20.04
+    permissions:
+      pull-requests: write
     steps:
 
       - name: Checkout code
@@ -22,5 +24,10 @@ jobs:
           path-to-file: "/deploy.yml"
           applicationName: "potato-facts-main4ps"
       - name: echo-ID
-        run: |
-          echo ${{join(steps.armory.outputs.*, '\n')}}
+        uses: mshick/add-pr-comment@v2
+          with:
+            message: |
+              Deployment URL - ${{steps.armory.outputs.DEPLOYMENT_ID}}
+
+#        run: |
+#          echo ${{join(steps.armory.outputs.*, '\n')}}
