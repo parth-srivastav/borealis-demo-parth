@@ -1,20 +1,16 @@
+# reminder:
+# kubectl port-forward service/load-test-locust 8089:8089 -n=borealis-perftest
+
 version: v1
 kind: kubernetes
-application: potato-facts2
+application: potato-facts-locust2
 # Map of Deployment Targets, this is set up in a way where 
 # we can do multi-target deployments (multi-region or multi-cluster)
-
-##  New feature July 11, 2022
-#deploymentConfig:
-#  timeout:
-#    unit: minutes
-#    duration: 1
-
-targets:  # The list of manifests sources
+targets:
   # This in the name of a deployment, underneath it are its configuration
   dev:
     # the name of an agent configured account
-    account: demo-staging-cluster #sa-eks-direct #saClusterViaHelm
+    account: demo-dev-cluster #sa-eks-direct #saClusterViaHelm
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-dev
     # This is the key to a strategy under the strategies map
@@ -30,8 +26,21 @@ targets:  # The list of manifests sources
     constraints:
       dependsOn: ["dev"]
       afterDeployment:
-        - runWebhook:
-            name: Integration_Tests
+      - runWebhook:
+          name: Integration_Tests
+  perf:
+    # the name of an agent configured account
+    account: demo-staging-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-perftest
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    # This is a list of manifest names that should be included in this deployment
+    constraints:
+      dependsOn: ["dev"]
+      afterDeployment:
+      - pause:
+          untilApproved: true
   infosec:
     # the name of an agent configured account
     account: demo-staging-cluster
@@ -42,53 +51,58 @@ targets:  # The list of manifests sources
     constraints:
       dependsOn: ["dev"]
       afterDeployment:
-        - runWebhook:
-            name: Security_Scanners
-  prod-eu:
-    # the name of an agent configured account
-    account: demo-staging-cluster
-    # Optionally override the namespaces that are in the manifests
-    namespace: borealis-prod-eu
-    # This is the key to a strategy under the strategies map
-    strategy: myBlueGreen
-    constraints:
-      dependsOn: [ "infosec","staging" ]
-      beforeDeployment:
-        - pause:
-            untilApproved: true
+      - runWebhook:
+          name: Security_Scanners
   prod-west:
     # the name of an agent configured account
-    account: demo-staging-cluster
+    account: demo-prod-west-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-prod
     # This is the key to a strategy under the strategies map
     strategy: mycanary
     constraints:
-      dependsOn: ["infosec","staging"]
+      dependsOn: ["staging","perf","infosec"]
+      beforeDeployment:
+      - pause:
+          untilApproved: true
+  prod-eu:
+    # the name of an agent configured account
+    account: demo-prod-eu-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod-eu
+    # This is the key to a strategy under the strategies map
+    strategy: myBlueGreen
+    constraints:
+      dependsOn: [ "staging","perf","infosec" ]
       beforeDeployment:
         - pause:
             untilApproved: true
-#  prod-east:
-#    # the name of an agent configured account
-#    account: 11-14-1
-#    # Optionally override the namespaces that are in the manifests
-#    namespace: borealis-prod-east
-#    # This is the key to a strategy under the strategies map
-#    strategy: mycanary
-#    constraints:
-#      dependsOn: [ "infosec","staging" ]
-#      beforeDeployment:
-#        - pause:
-#            untilApproved: true
-
-manifests:  # The map of strategies, a deployment target will reference one of these
+  prod-east:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod-east
+    # This is the key to a strategy under the strategies map
+    strategy: mycanary
+    constraints:
+      dependsOn: [ "staging","perf","infosec" ]
+      beforeDeployment:
+        - pause:
+            untilApproved: true
+# The list of manifests sources
+manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
   - path: manifests/potato-facts.yml
   - path: manifests/potato-facts-external-service.yml
-    targets: [prod-west, prod-eu]
+    targets: [prod-west, prod-eu, prod-east]
   - path: manifests/potato-lies.yml
+  - path: manifests/potato-facts-internal-service.yml
+    targets: [perf-test]
+  - path: thirdParty/locust/generatedManifest.yml
+    targets: [perf]
 
-strategies:  # Stragies names and definition
+# The map of strategies, a deployment target will reference one of these
+strategies:
   # this is the name for the strategy
   mycanary:
     # This map key, is the deployment strategy type
@@ -99,12 +113,11 @@ strategies:  # Stragies names and definition
           - setWeight:
               weight: 25
           - analysis:
-              interval: 8
+              interval: 7
               units: seconds
               numberOfJudgmentRuns: 1
               rollBackMode: manual
               rollForwardMode: automatic
-              lookbackMethod: GROWING
               queries:
               - avgCPUUsage-pass
           - runWebhook:
@@ -114,12 +127,11 @@ strategies:  # Stragies names and definition
           - setWeight:
               weight: 50
           - analysis:
-              interval: 8
+              interval: 7
               units: seconds
               numberOfJudgmentRuns: 3
               rollBackMode: manual
               rollForwardMode: manual
-              lookbackMethod: GROWING
               queries: 
               - avgCPUUsage-fail
               - avgCPUUsage-pass
@@ -134,8 +146,7 @@ strategies:  # Stragies names and definition
           weight: 100
   myBlueGreen:
     blueGreen:
-
-# activeService: potato-facts-external
+#      activeService: potato-facts-external
       redirectTrafficAfter:
         - analysis:
             interval: 7
@@ -143,7 +154,6 @@ strategies:  # Stragies names and definition
             numberOfJudgmentRuns: 1
             rollBackMode: manual
             rollForwardMode: automatic
-            lookbackMethod: GROWING
             queries:
               - avgCPUUsage-pass
       shutDownOldVersionAfter:
@@ -155,30 +165,32 @@ strategies:  # Stragies names and definition
             interval: 7
             units: seconds
             numberOfJudgmentRuns: 1
-            lookbackMethod: GROWING
             rollBackMode: manual
             queries:
               - avgCPUUsage-pass
-
-analysis:  # Canary analysis queries and thresholds
+analysis:
   defaultMetricProviderName: Stephen-Prometheus
   queries:
     - name: avgCPUUsage-pass
-      upperLimit: 1000 #3
-      lowerLimit: -5
+      upperLimit: 10000 #3
+      lowerLimit: 0
       queryTemplate: >-
-        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
+        by (annotation_app, pod)) by (annotation_app)
     - name: avgCPUUsage-fail
       upperLimit: 0.001
       lowerLimit: 0
       queryTemplate: >-
-        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
+        by (annotation_app, pod)) by (annotation_app)
 
 trafficManagement:
-#  - targets: [prod-east]
-#    smi:
-#      - rootServiceName: potato-facts-cluster-svc
-#      - rootServiceName: potato-lies-cluster-svc
+  - targets: [prod-east]
+    smi:
+      - rootServiceName: potato-facts-cluster-svc
+      - rootServiceName: potato-lies-cluster-svc
   - targets: [prod-eu]
     kubernetes:
       - activeService: potato-facts-external
@@ -198,8 +210,7 @@ webhooks: #Note: All webhooks in this demo simply cann the github action workflo
         {
         "event_type": "webhookCallback",
         "client_payload": {
-            "callbackUri": "{{armory.callbackUri}}/callback",
-            "environment": "{{context.environment}}"
+            "callbackUri": "{{armory.callbackUri}}/callback"
             }
         }
     retryCount: 3

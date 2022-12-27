@@ -9,11 +9,18 @@ kubectl create ns borealis-staging
 kubectl create ns borealis-infosec
 kubectl create ns borealis-prod
 kubectl create ns borealis-prod-eu
+kubectl create ns borealis-prod-east
 kubectl create ns borealis-demo-agent-prod-eu
+kubectl create ns borealis-argo
+mkdir manifests
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
-kubectl -n=borealis-demo-agent-staging create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
-kubectl -n=borealis-demo-agent-dev create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
-kubectl -n=borealis-demo-agent-prod-eu create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
+export clientid=`kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o=go-template='{{index .data "client-id"}}' | base64 -d`
+export secret=`kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o=go-template='{{index .data "client-secret"}}' | base64 -d`
+echo $clientid
+kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid --dry-run=client -o=yaml > manifests/agent-secret.yml
+
+#kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}' > manifests/agent-secret.yaml
+
 
 # Optionally Add Armory Chart repo, if you haven't
 helm repo add armory https://armory.jfrog.io/artifactory/charts
@@ -21,46 +28,42 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 # Update repo to fetch latest armory charts
 helm repo update
 # Install or Upgrade armory rna chart
-helm upgrade --install armory-rna-prod armory/remote-network-agent \
-    --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id' \
-    --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
-    --set agentIdentifier=demo-prod-west-cluster \
-    -n borealis-demo-agent-prod
-helm upgrade --install armory-rna-staging armory/remote-network-agent \
-    --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id' \
-    --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
-    --set agentIdentifier=demo-staging-cluster \
-    -n borealis-demo-agent-staging
-helm upgrade --install armory-rna-dev armory/remote-network-agent \
-    --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id' \
-    --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
-    --set agentIdentifier=demo-dev-cluster \
-    -n borealis-demo-agent-dev
-helm upgrade --install armory-rna-prod-eu armory/remote-network-agent \
-    --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id' \
-    --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
-    --set agentIdentifier=demo-prod-eu-cluster \
-    -n borealis-demo-agent-prod-eu
-#helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricLabelsAllowlist[0]=pods=[*]
-helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"
+helm upgrade --install armory-rna-prod armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-west-cluster     -n borealis-demo-agent-prod
+helm template demo-dev-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-dev-cluster    -n borealis-demo-agent-prod> manifests/rna-dev.yml
+helm template demo-staging-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-staging-cluster    -n borealis-demo-agent-prod> manifests/rna-staging.yml
+helm template demo-prod-eu-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-eu-cluster   -n borealis-demo-agent-prod> manifests/rna-eu.yml
 
+
+helm template prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m --set defaultRules.create=false --set global.rbac.create=false --set kube-state-metrics.rbac.create=false  --set grafana.defaultDashboardsEnabled=false --set prometheusOperator.tls.enabled=false> manifests/prometheus.yml
+
+sh argo-rollouts.sh
+#sleep 5 #=Adding a timed sleep before prometheus install to see if it resolves some installation issues,
+#echo "Attempting Prometheus install"
+#helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m
 BASEDIR=$(dirname $0)
+#kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
 
-kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
+
 
 echo "Installing LinkerD service Mesh on cluster. if you run into errors - see docs at - https://linkerd.io/2.11/getting-started/"
-curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+sh linkerd.sh
 echo "Adding Linked bin to PATH."
 export PATH=~/.linkerd2/bin:$PATH
 linkerd check --pre
+#linkerd install --crds --set proxyInit.runAsRoot=true --ignore-cluster | kubectl apply -f -
 linkerd install --set proxyInit.runAsRoot=true | kubectl apply -f -
-
+#linkerd install --set proxyInit.runAsRoot=true > manifests/linkerd.yml #installing linkerD via armory hits the length limit bug. grr.
+#curl -sL https://linkerd.github.io/linkerd-smi/install | sh
+#linkerd smi install | kubectl apply -f -
 echo "LinkerD installation complete, hopefully"
 echo "Creating new environment for traffic management deployment"
 
-kubectl create ns borealis-prod-east
+sleep 60 # make sure the first agent finished starting...
+armory deploy start -f deploy-infra.yml
 
-kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-east
+
+
+#kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-east
 
 #container_cpu_load_average_10s{namespace="borealis", job="kubelet"} * on (pod)  group_left (label_app) sum(kube_pod_labels{job="kube-state-metrics",label_app="hostname",namespace="borealis"}) by (label_app, pod)
 

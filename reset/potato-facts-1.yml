@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hostname
+  name: potato-facts
   namespace: borealis
   annotations: 
     "app": "potato-facts"
     "prometheus.io/scrape": "true"
 spec:
   revisionHistoryLimit: 1
-  replicas: 10
+  replicas: 4
   strategy:
     type: RollingUpdate
     rollingUpdate:

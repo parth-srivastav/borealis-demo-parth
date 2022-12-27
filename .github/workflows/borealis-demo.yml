@@ -1,30 +1,34 @@
 name: Deploy my latest version
 
-on:
+on: 
   push: # What triggers a deployment. For example, `push`.
     branches:
-      - main # What branch triggers a deployment. For example, `main`.
+      - main # What branch triggers a deployment. For example, `main`.   
 
 jobs:
   build:
     name: deploy from main
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-20.04
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v2
-
       - name: Deployment
-        id: deployment
-        uses: armory/cli-deploy-action@main
+        uses: armory/cli-deploy-action@dev
         with:
-          clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
-          clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
-          path-to-file: "/deploy-automated-2-env.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
-#      - name: readApplicationName
-#        run: grep application -f "deploy-automated-2-env.yml"
-#        shell: bash
-#
-#      - name: script
-#        run: echo "${{ steps.deployment.deployment-link }}"
-#        shell: bash
+          clientId: ${{ secrets.CDAAS_CLIENT_ID }}  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
+          clientSecret:  ${{ secrets.CDAAS_CLIENT_SECRET }} #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
+          path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+          #path-to-file: "/deploy-locust.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+          #path-to-file: "/deploy-webhook.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+          addContext: "environment=prod,pr=test"
+          applicationName: "potato-facts4ps" # yes?
+      #- name: Wait for integration tests to succeed with builtin timeout
+      #  uses: fountainhead/action-wait-for-check@v1.0.0
+      #  id: wait-for-build
+      #  with:
+      #    token: ${{ secrets.GITHUB_TOKEN }}
+      #    checkName: 'Integration_Tests'
+      #    ref: ${{ github.ref }}
+      #    timeoutSeconds: 600
+

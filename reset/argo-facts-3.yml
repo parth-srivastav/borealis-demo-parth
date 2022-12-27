@@ -1,5 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: potato-facts
   namespace: borealis
@@ -7,13 +7,13 @@ metadata:
     "app": "potato-facts"
     "prometheus.io/scrape": "true"
 spec:
-  revisionHistoryLimit: 1
-  replicas: 4
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 2
-      maxUnavailable: 1
+    canary:
+      canaryService: potato-facts-external
+      steps:
+      - setWeight: 100
+  revisionHistoryLimit: 0
+  replicas: 4
   selector:
     matchLabels:
       app: potato-facts
@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
 #      - image:  armory/potato-facts:v1.6.0 #v1.5.1 #v1.6.0 # v1.7.0
-      - image:  demoimages/bluegreen:v5 #v5, v4, v3
+      - image:  demoimages/bluegreen:v3 #v5, v4, v3
         imagePullPolicy: Always
         name: potato-facts
         resources:
@@ -44,37 +44,4 @@ spec:
         ports:
           - containerPort: 8000
       restartPolicy: Always
-
-
-#---
-#apiVersion: v1
-#kind: Service
-#metadata:
-#  labels:
-#    app: potato-facts
-#  name: potato-facts
-#  namespace: borealis
-#spec:
-#  ports:
-#  - name: gate-tcp
-#    port: 80
-#    protocol: TCP
-#    targetPort: 8086
-#  selector:
-#    app: potato-facts
-#  type: ClusterIP
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
