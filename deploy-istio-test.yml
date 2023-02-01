@@ -1,0 +1,35 @@
+
+version: v1
+kind: kubernetes
+application: istio_deploy
+targets:
+  staging:
+    account: staging-2
+    namespace: borealis-dev
+    strategy: integration
+  production:
+    account: staging-2
+    namespace: borealis-prod
+    strategy: integration
+
+manifests:
+  - path: istio-inte-test/nginx_deployment.yml
+  - path: istio-inte-test/istio_config.yaml
+  - path: istio-inte-test/nginx_service.yaml
+
+strategies:
+  integration:
+    canary:
+      steps:
+        - setWeight:
+            weight: 25
+        - pause:
+            untilApproved: true
+
+trafficManagement:
+  - targets: [staging]
+    istio:
+      - virtualService:
+          name: istio-sample
+        destinationRule:
+          name: istio-sample
