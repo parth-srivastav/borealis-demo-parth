@@ -6,19 +6,19 @@ targets:
   staging:
     account: staging-2
     namespace: borealis-dev
-    strategy: integration
+    strategy: myCanary
   production:
     account: staging-2
     namespace: borealis-prod
-    strategy: integration
+    strategy: myCanary
 
 manifests:
-  - path: istio-inte-test/nginx_deployment.yml
-  - path: istio-inte-test/istio_config.yaml
-  - path: istio-inte-test/nginx_service.yaml
+  - path: istio/nginx_deployment.yml
+  - path: istio/istio_config.yaml
+  - path: istio/nginx_service.yaml
 
 strategies:
-  integration:
+  myCanary:
     canary:
       steps:
         - setWeight:
