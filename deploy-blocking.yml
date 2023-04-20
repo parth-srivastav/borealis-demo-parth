@@ -16,6 +16,24 @@ targets: #This section defines the targets to which you are deploying, and their
         - dev
     namespace: borealis-infosec
     strategy: rolling
+  prod-apac:
+    account: demo-prod-west-cluster
+    constraints:
+      afterDeployment:
+        - runWebhook:
+            name: Send_Slack_Deployment_Complete
+      beforeDeployment:
+        - pause:
+            requiresRoles:
+              - Organization Admin
+            untilApproved: true
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+      dependsOn:
+        - infosec
+        - staging
+    namespace: borealis-prod-apac
+    strategy: mycanary
   prod-east:
     account: demo-prod-west-cluster
     constraints:
@@ -52,22 +70,6 @@ targets: #This section defines the targets to which you are deploying, and their
         - staging
     namespace: borealis-prod-eu
     strategy: myBlueGreen
-  prod-operator:
-    account: demo-prod-west-cluster
-    constraints:
-      afterDeployment:
-        - runWebhook:
-            name: Refer to Argo Rollouts for status
-      beforeDeployment:
-        - pause:
-            untilApproved: true
-          requiresRoles:
-            - Organization Admin
-      dependsOn:
-        - infosec
-        - staging
-    namespace: borealis-argo
-    strategy: rolling
   prod-west:
     account: demo-prod-west-cluster
     constraints:
@@ -86,25 +88,6 @@ targets: #This section defines the targets to which you are deploying, and their
         - staging
     namespace: borealis-prod
     strategy: mycanary
-  prod-apac:
-    account: demo-prod-west-cluster
-    constraints:
-      afterDeployment:
-        - runWebhook:
-            name: Send_Slack_Deployment_Complete
-      beforeDeployment:
-        - pause:
-            requiresRoles:
-              - Organization Admin
-            untilApproved: true
-        - runWebhook:
-            name: Send_Slack_Deployment_Approval_Required
-      dependsOn:
-        - infosec
-        - staging
-    namespace: borealis-prod-apac
-    strategy: mycanary
-
   staging:
     account: demo-staging-cluster
     constraints:
@@ -117,20 +100,8 @@ targets: #This section defines the targets to which you are deploying, and their
     strategy: rolling
 manifests: #This section defines the Manifests you are deploying, by default they reach all targets, but you can specify certain targets if needed.
   - path: manifests/potato-facts.yml
-    targets:
-      - infosec
-      - staging
-      - dev
-      - prod-west
-      - prod-eu
-      - prod-east
-      - prod-apac
-  - path: manifests/argo-facts.yml
-    targets:
-      - prod-operator
   - path: manifests/potato-facts-external-service.yml
     targets:
-      - prod-operator
       - prod-west
       - prod-eu
       - prod-east
@@ -141,16 +112,9 @@ manifests: #This section defines the Manifests you are deploying, by default the
       - staging
       - infosec
       - prod-eu
-  - path: manifests/potato-lies.yml
-    targets:
-      - infosec
-      - staging
-      - dev
-      - prod-west
-      - prod-eu
-      - prod-east
       - prod-apac
-  - path: manifests/istio-files/
+  - path: manifests/potato-lies.yml
+  - path: manifests/istio-files
     targets:
       - prod-apac
 strategies: #This section defines the strategies environments can use to deploy.
@@ -254,8 +218,8 @@ analysis: #This section defines queries against your monitoring system that can 
       upperLimit: 0.001
 trafficManagement: #Traffic management configuration
   - smi:
-      - rootServiceName: potato-facts-cluster-svc
-      - rootServiceName: potato-lies-cluster-svc
+      - rootServiceName: potato-facts-external
+      - rootServiceName: potato-lies-external
     targets:
       - prod-east
   - kubernetes:
@@ -266,27 +230,19 @@ trafficManagement: #Traffic management configuration
     targets:
       - prod-eu
   - istio:
-      - virtualService:
-          name: potato-facts
-        destinationRule:
-          name: potato-facts
+      - destinationRule:
           activeSubsetName: v1
-      - virtualService:
-          name: potato-lies-external
-        destinationRule:
-          name: potato-lies-external
+          name: potato-facts
+        virtualService:
+          name: potato-facts
+      - destinationRule:
           activeSubsetName: v1
+          name: potato-lies-external
+        virtualService:
+          name: potato-lies-external
     targets:
       - prod-apac
 webhooks: #Webhooks can be used to run external automation.
-  - agentIdentifier: demo-prod-west-cluster
-    bodyTemplate:
-      inline: '{ "cmd": "kubectl", "arg": "wait -n=borealis-argo rollout/potato-facts --for=condition=Completed --timeout=30m", "callbackURL": "{{armory.callbackUri}}/callback" }'
-    method: POST
-    name: Refer to Argo Rollouts for status
-    networkMode: remoteNetworkAgent
-    retryCount: 3
-    uriTemplate: http://cmd-hook.borealis-demo-agent-prod:8081/cmd
   - bodyTemplate:
       inline: |-
         { "event_type": "webhookCallback", "client_payload": {
@@ -353,3 +309,20 @@ webhooks: #Webhooks can be used to run external automation.
     name: Send_Slack_Deployment_Approval_Required
     retryCount: 3
     uriTemplate: '{{secrets.slackwebhookURL}}'
+  - bodyTemplate:
+      inline: |-
+        { "event_type": "checkLogs", "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback",
+            "accountName": "{{armory.accountName}}",
+            "applicationName": "{{armory.applicationName}}"
+            }
+        }
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    method: POST
+    name: checkBlock
+    retryCount: 3
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches

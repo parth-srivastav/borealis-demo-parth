@@ -1,0 +1,6 @@
+blockDeployment:
+  - accounts: 
+    - prod-west
+    - prod-east
+    application:
+    - potato-facts
