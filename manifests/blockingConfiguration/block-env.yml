@@ -1,6 +1,11 @@
 blockDeployment:
   - accounts: 
     - prod-west
-    - prod-east
+    - prod-eu
     application:
     - potato-facts
+  - accounts: 
+    - prod-apac
+    - prod-east
+    application:
+    - potato-lies
