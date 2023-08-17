@@ -10,7 +10,7 @@ def check_yaml(yaml_path):
     for item in block_deployment:
         if (
             'application' in item and 'accounts' in item and
-            'potato-facts' in item['application'] and 'prod-west' in item['accounts']
+            'potato-lies' in item['application'] and 'prod-west' in item['accounts']
         ):
             return True
     
