@@ -6,6 +6,10 @@ targets: #This section defines the targets to which you are deploying, and their
     account: demo-dev-cluster
     namespace: borealis-dev
     strategy: rolling
+    constraints:
+      beforeDeployment:
+        - runWebhook:
+            name: checkBlock
   infosec:
     account: demo-staging-cluster
     constraints:
