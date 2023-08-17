@@ -313,7 +313,7 @@ webhooks: #Webhooks can be used to run external automation.
     uriTemplate: '{{secrets.slackwebhookURL}}'
   - bodyTemplate:
       inline: |-
-        { "event_type": "checkLogs", "client_payload": {
+        { "event_type": "checkBlock", "client_payload": {
             "callbackUri": "{{armory.callbackUri}}/callback",
             "accountName": "{{armory.accountName}}",
             "applicationName": "{{armory.applicationName}}"
