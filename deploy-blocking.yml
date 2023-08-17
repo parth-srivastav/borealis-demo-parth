@@ -83,6 +83,8 @@ targets: #This section defines the targets to which you are deploying, and their
             untilApproved: true
         - runWebhook:
             name: Send_Slack_Deployment_Approval_Required
+        - runWebhook:
+            name: checkBlock
       dependsOn:
         - infosec
         - staging

@@ -9,6 +9,9 @@ jobs:
     name: Calls the callback being passed in
     runs-on: ubuntu-latest
     steps:
+      - name: getBodyParams
+        id: getBodyParams
+        run: echo ${{ github.event.client_payload.accountName }}
       - name: getToken
         id: getToken
         uses: fjogeleit/http-request-action@master
