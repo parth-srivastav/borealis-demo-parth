@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: getBodyParams
         id: getBodyParams
-        run: echo ${{ github.event.client_payload.accountName }}
+        run: echo "account name ${{ github.event.client_payload.accountName }}"
       - name: getToken
         id: getToken
         uses: fjogeleit/http-request-action@master
