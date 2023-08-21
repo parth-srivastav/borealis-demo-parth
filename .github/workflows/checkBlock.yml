@@ -21,6 +21,14 @@ jobs:
         run: |
           pip install pyyaml
           python yaml_checker.py manifests/blockingConfiguration/block-env.yml ${{ github.event.client_payload.accountName }} ${{ github.event.client_payload.applicationName }}
+        continue-on-error: true
+      - name: Set output based on script result
+        run: |
+          if [ ${{ steps.check_result.exit_code }} -eq 0 ]; then
+              echo "::set-output name=combination_exists::true"
+          else
+              echo "::set-output name=combination_exists::false"
+          fi
       - name: getToken
         id: getToken
         uses: fjogeleit/http-request-action@master
@@ -37,6 +45,6 @@ jobs:
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": true, "mdMessage": "Webhook successful: no errors found in logs" }'
+          data: '{ "success": ${{ steps.check_result.outputs.combination_exists }}, "mdMessage": "Application or account block is: ${{ steps.check_result.outputs.combination_exists }}" }'
       - name: show http response
         run: echo ${{ steps.callCallback.outputs.response }}
