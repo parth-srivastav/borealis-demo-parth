@@ -26,7 +26,7 @@ jobs:
       - name: Set output based on script result
         run: |
           echo "Outcome ${{ steps.check_result.outcome}}"
-          if [ ${{ steps.check_result.outcome }} -eq 0 ]; then
+          if [ ${{ steps.check_result.outcome }} -eq "success" ]; then
               echo "::set-output name=combination_exists::true"
           else
               echo "::set-output name=combination_exists::false"
