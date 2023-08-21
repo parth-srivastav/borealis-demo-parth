@@ -21,6 +21,7 @@ if __name__ == "__main__":
     account = sys.argv[2]
     application_name = sys.argv[3]
     if check_yaml(yaml_path, account, application_name):
+        print ("Combination Found")
         sys.exit(1)
     else:
         sys.exit(0)
