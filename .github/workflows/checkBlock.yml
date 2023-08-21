@@ -26,10 +26,10 @@ jobs:
       - name: Set output based on script result
         run: |
           echo "Outcome ${{ steps.check_result.outcome}}"
-          if [ ${{ steps.check_result.outcome }} -eq "success" ]; then
-              echo "::set-output name=combination_exists::true"
+          if [ ${{ steps.check_result.outcome }} == "success" ]; then
+              echo "combination_exists=true" >> $GITHUB_OUTPUT
           else
-              echo "::set-output name=combination_exists::false"
+              echo "combination_exists=false" >> $GITHUB_OUTPUT
           fi
       - name: getToken
         id: getToken
@@ -47,6 +47,6 @@ jobs:
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": ${{ steps.check_result.outputs.combination_exists }}, "mdMessage": "Application or account block is: ${{ steps.check_result.outputs.combination_exists }}" }'
+          data: '{ "success": ${{ env.combination_exists }}, "mdMessage": "Application or account block is: ${{ env.combination_exists }}" }'
       - name: show http response
         run: echo ${{ steps.callCallback.outputs.response }}
