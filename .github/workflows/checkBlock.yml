@@ -18,6 +18,7 @@ jobs:
           ref: 'ps/beebrush'
       
       - name: Run YAML check script
+        id: check_result
         run: |
           pip install pyyaml
           python yaml_checker.py manifests/blockingConfiguration/block-env.yml ${{ github.event.client_payload.accountName }} ${{ github.event.client_payload.applicationName }}
