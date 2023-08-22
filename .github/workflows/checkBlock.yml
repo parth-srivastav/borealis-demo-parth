@@ -25,12 +25,6 @@ jobs:
           pip install pyyaml
           python yaml_checker.py manifests/blockingConfiguration/block-env.yml ${{ github.event.client_payload.accountName }} ${{ github.event.client_payload.applicationName }}
         continue-on-error: true
-      - name: Set output based on script result
-        id: set_result
-        run: |
-          echo "Outcome ${{ steps.check_result.outcome}}"
-          block_result = ${{ steps.check_result.outcome == 'success' }}
-          echo "block_result $block_result" 
       - name: getToken
         id: getToken
         uses: fjogeleit/http-request-action@master
@@ -42,11 +36,22 @@ jobs:
       - name: callCallback
         id: callCallback
         uses: fjogeleit/http-request-action@master
+        if:  ${{ steps.check_result.outcome == 'success' }}
         with:
           url: ${{ github.event.client_payload.callbackUri }}
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": "$block_result", "mdMessage": "Application or account block is:" }'
+          data: '{ "success": true, "mdMessage": "Application or account block is:" }'
+      - name: callFalseCallback
+        id: callFalseCallback
+        uses: fjogeleit/http-request-action@master
+        if:  ${{ steps.check_result.outcome != 'success' }}
+        with:
+          url: ${{ github.event.client_payload.callbackUri }}
+          method: 'POST'
+          bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
+          customHeaders: '{ "Content-Type": "application/json" }'
+          data: '{ "success": false, "mdMessage": "Application or account block is:" }'
       - name: show http response
         run: echo ${{ steps.callCallback.outputs.response }}
