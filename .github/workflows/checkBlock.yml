@@ -44,6 +44,6 @@ jobs:
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": ${{ steps.set_result.outputs.boolean_flag }}, "mdMessage": "Application or account block is: ${{ env.combination_exists }}" }'
+          data: '{ "success": "${{ steps.check_result.outcome == 'success' }}", "mdMessage": "Application or account block is: ${{ steps.check_result.outcome == 'success' }}" }'
       - name: show http response
         run: echo ${{ steps.callCallback.outputs.response }}
