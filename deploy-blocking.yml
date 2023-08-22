@@ -100,6 +100,9 @@ targets: #This section defines the targets to which you are deploying, and their
       afterDeployment:
         - runWebhook:
             name: Integration_Tests
+      beforeDeployment:
+        - runWebhook:
+            name: checkBlock
       dependsOn:
         - dev
     namespace: borealis-staging

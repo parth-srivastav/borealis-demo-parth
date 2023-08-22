@@ -5,7 +5,7 @@ blockDeployment:
     application:
     - potato-facts
   - accounts: 
-    - prod-apac
+    - demo-staging-cluster
     - prod-east
     application:
-    - potato-lies
+    - *
