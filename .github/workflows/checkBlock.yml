@@ -24,13 +24,10 @@ jobs:
           python yaml_checker.py manifests/blockingConfiguration/block-env.yml ${{ github.event.client_payload.accountName }} ${{ github.event.client_payload.applicationName }}
         continue-on-error: true
       - name: Set output based on script result
+        id: set_result
         run: |
           echo "Outcome ${{ steps.check_result.outcome}}"
-          if [ ${{ steps.check_result.outcome }} == "success" ]; then
-              echo "combination_exists=true" >> $GITHUB_OUTPUT
-          else
-              echo "combination_exists=false" >> $GITHUB_OUTPUT
-          fi
+          boolean_flag = ${{ steps.check_result.outcome == 'success' }}
       - name: getToken
         id: getToken
         uses: fjogeleit/http-request-action@master
@@ -47,6 +44,6 @@ jobs:
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": ${{ env.combination_exists }}, "mdMessage": "Application or account block is: ${{ env.combination_exists }}" }'
+          data: '{ "success": ${{ steps.set_result.outputs.boolean_flag }}, "mdMessage": "Application or account block is: ${{ env.combination_exists }}" }'
       - name: show http response
         run: echo ${{ steps.callCallback.outputs.response }}
