@@ -42,7 +42,7 @@ jobs:
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": true, "mdMessage": "Application or account block is:" }'
+          data: '{ "success": true, "mdMessage": "Application or account block is not blocked" }'
       - name: callFalseCallback
         id: callFalseCallback
         uses: fjogeleit/http-request-action@master
@@ -52,6 +52,6 @@ jobs:
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": false, "mdMessage": "Application or account block is:" }'
+          data: '{ "success": false, "mdMessage": "Application or account is blocked for deployment" }'
       - name: show http response
         run: echo ${{ steps.callCallback.outputs.response }}
