@@ -8,6 +8,8 @@ jobs:
   respond:
     name: Calls the callback being passed in
     runs-on: ubuntu-latest
+    env:
+      block_result: true
     steps:
       - name: getBodyParams
         id: getBodyParams
@@ -27,7 +29,8 @@ jobs:
         id: set_result
         run: |
           echo "Outcome ${{ steps.check_result.outcome}}"
-          # boolean_flag = ${{ steps.check_result.outcome == 'success' }}
+          block_result = ${{ steps.check_result.outcome == 'success' }}
+          echo "block_result $block_result" 
       - name: getToken
         id: getToken
         uses: fjogeleit/http-request-action@master
@@ -44,6 +47,6 @@ jobs:
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": "${{ steps.check_result.outcome == 'success' }}", "mdMessage": "Application or account block is:" }'
+          data: '{ "success": "$block_result", "mdMessage": "Application or account block is:" }'
       - name: show http response
         run: echo ${{ steps.callCallback.outputs.response }}
