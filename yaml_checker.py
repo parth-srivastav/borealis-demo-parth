@@ -10,7 +10,7 @@ def check_yaml(yaml_path, account, application_name):
     for item in block_deployment:
         if (
             'application' in item and 'accounts' in item and
-            application_name in item['application'] or '*' in item['application'] and account in item['accounts'] or '*' in item['accounts']
+            (application_name in item['application'] or '*' in item['application']) and (account in item['accounts'] or '*' in item['accounts'])
         ):
             return True
     
