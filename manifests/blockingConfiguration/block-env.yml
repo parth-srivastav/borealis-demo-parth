@@ -8,4 +8,4 @@ blockDeployment:
     - demo-staging-cluster
     - prod-east
     application:
-    - *
+    - '*'
