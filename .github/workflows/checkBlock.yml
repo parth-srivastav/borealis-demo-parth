@@ -8,10 +8,23 @@ jobs:
   respond:
     name: Calls the callback being passed in
     runs-on: ubuntu-latest
+    env:
+      block_result: true
     steps:
       - name: getBodyParams
         id: getBodyParams
-        run: echo ${{ github.event.client_payload.accountName }}
+        run: echo "account name ${{ github.event.client_payload.accountName }}"
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: 'ps/beebrush'
+      
+      - name: Run YAML check script
+        id: check_result
+        run: |
+          pip install pyyaml
+          python yaml_checker.py manifests/blockingConfiguration/block-env.yml ${{ github.event.client_payload.accountName }} ${{ github.event.client_payload.applicationName }}
+        continue-on-error: true
       - name: getToken
         id: getToken
         uses: fjogeleit/http-request-action@master
@@ -23,11 +36,22 @@ jobs:
       - name: callCallback
         id: callCallback
         uses: fjogeleit/http-request-action@master
+        if:  ${{ steps.check_result.outcome == 'success' }}
         with:
           url: ${{ github.event.client_payload.callbackUri }}
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": true, "mdMessage": "Webhook successful: no errors found in logs" }'
+          data: '{ "success": true, "mdMessage": "Application or account block is not blocked" }'
+      - name: callFalseCallback
+        id: callFalseCallback
+        uses: fjogeleit/http-request-action@master
+        if:  ${{ steps.check_result.outcome != 'success' }}
+        with:
+          url: ${{ github.event.client_payload.callbackUri }}
+          method: 'POST'
+          bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
+          customHeaders: '{ "Content-Type": "application/json" }'
+          data: '{ "success": false, "mdMessage": "Application or account is blocked for deployment" }'
       - name: show http response
         run: echo ${{ steps.callCallback.outputs.response }}
