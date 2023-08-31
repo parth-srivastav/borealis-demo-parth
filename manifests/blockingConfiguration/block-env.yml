@@ -1,6 +1,6 @@
 blockDeployment:
   - accounts: 
-    - demo-prod-west-cluster
+    - demo-cluster
     - prod-eu
     application:
     - potato-facts
